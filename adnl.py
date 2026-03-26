@@ -495,9 +495,16 @@ def run_tpl_stage(reset, erase_code, aml_img, dev_addr_rom_stage):
     send_cmd(epout, epin, f'oem disk_initial {erase_code}')
     tpl_send_burnsteps(epout, epin, TPL_BURNSTEPS_2)
 
+    has_bootloader = False
+
     for item in aml_img.items():
         if item.main_type() == 'PARTITION':
+            has_bootloader = (item.sub_type() == 'bootloader')
             tpl_burn_partition(item, aml_img, epout, epin)
+
+    if has_bootloader:
+        logging.info('Sending save_setting...')
+        send_cmd(epout, epin, 'oem save_setting')
 
     if reset:
         logging.info('Reset')
